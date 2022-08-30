@@ -163,14 +163,14 @@ def create_app(test_config=None):
         except:
             print(sys.exc_info())
             abort(405)
-    """
-    @TODO:
-    Create a GET endpoint to get questions based on category.
+    # """
+    # @TODO:
+    # Create a GET endpoint to get questions based on category.
 
-    TEST: In the "List" tab / main screen, clicking on one of the
-    categories in the left column will cause only questions of that
-    category to be shown.
-    """
+    # TEST: In the "List" tab / main screen, clicking on one of the
+    # categories in the left column will cause only questions of that
+    # category to be shown.
+    # """
     @app.route('/categories/<int:category_id>/questions', methods=['GET'])
     def getQuestionsByCategory(category_id):
         try:
@@ -190,23 +190,23 @@ def create_app(test_config=None):
             abort(404)
 
 
-    """
-    @TODO:
-    Create a POST endpoint to get questions to play the quiz.
-    This endpoint should take category and previous question parameters
-    and return a random questions within the given category,
-    if provided, and that is not one of the previous questions.
+    # """
+    # @TODO:
+    # Create a POST endpoint to get questions to play the quiz.
+    # This endpoint should take category and previous question parameters
+    # and return a random questions within the given category,
+    # if provided, and that is not one of the previous questions.
 
-    TEST: In the "Play" tab, after a user selects "All" or a category,
-    one question at a time is displayed, the user is allowed to answer
-    and shown whether they were correct or not.
-    """
+    # TEST: In the "Play" tab, after a user selects "All" or a category,
+    # one question at a time is displayed, the user is allowed to answer
+    # and shown whether they were correct or not.
+    # """
 
     @app.route('/quizzes', methods=['POST'])
     def playQuiz():
-        previousQuestions = []
         try:
             body = request.get_json()
+            previousQuestions = body['previous_questions']
             quizCategoryObject = body['quiz_category']
             quizCategory = quizCategoryObject['type']
             
@@ -216,15 +216,22 @@ def create_app(test_config=None):
                 questions = Question.query.filter(Question.category == category.id).all()
                 formattedQuestions = [question.format() for question in questions]
                 totalQuestions = len(formattedQuestions)
-            
+                
                 randomIndexNumber = randint(0, (totalQuestions - 1))
                 randomQuestion = formattedQuestions[randomIndexNumber]
+               
+               #Logic to check for repetitions
+                while randomQuestion['id'] in previousQuestions:
 
-                previousQuestions.append(randomQuestion)
+                    randomIndexNumber = randint(0, (totalQuestions - 1))
+                    randomQuestion = formattedQuestions[randomIndexNumber]
 
+                    if len(previousQuestions) == totalQuestions:
+                        break
+                
                 return jsonify({
-                    'previousQuestions':previousQuestions,
-                    'question': randomQuestion,
+                    'previousQuestions': previousQuestions,
+                    'question': randomQuestion
                 })
 
             else:
@@ -234,8 +241,12 @@ def create_app(test_config=None):
             
                 randomIndexNumber = randint(0, (totalQuestions - 1))
                 randomQuestion = formattedQuestions[randomIndexNumber]
+              
+                while randomQuestion['id'] in previousQuestions:
 
-                previousQuestions.append(randomQuestion)
+                    randomIndexNumber = randint(0, (totalQuestions - 1))
+                    randomQuestion = formattedQuestions[randomIndexNumber]
+            
                 return jsonify({
                     'previousQuestions':previousQuestions,
                     'question': randomQuestion,
