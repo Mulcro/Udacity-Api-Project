@@ -129,7 +129,7 @@ def create_app(test_config=None):
             newQuestion.insert()
         except:
             print(sys.exc_info())
-            abort(405)
+            abort(400)
 
         return jsonify({
             'success': True
@@ -162,7 +162,7 @@ def create_app(test_config=None):
             })
         except:
             print(sys.exc_info())
-            abort(405)
+            abort(400)
     # """
     # @TODO:
     # Create a GET endpoint to get questions based on category.
@@ -226,6 +226,7 @@ def create_app(test_config=None):
                     randomIndexNumber = randint(0, (totalQuestions - 1))
                     randomQuestion = formattedQuestions[randomIndexNumber]
 
+                    #Condition to break loop once 5 questions have been asked
                     if len(previousQuestions) == totalQuestions:
                         break
                 
@@ -242,6 +243,7 @@ def create_app(test_config=None):
                 randomIndexNumber = randint(0, (totalQuestions - 1))
                 randomQuestion = formattedQuestions[randomIndexNumber]
               
+                #Logic to check for repetitions
                 while randomQuestion['id'] in previousQuestions:
 
                     randomIndexNumber = randint(0, (totalQuestions - 1))
@@ -254,16 +256,13 @@ def create_app(test_config=None):
 
         except:
             print(sys.exc_info())
-            abort(405)
+            abort(400)
 
-
-
-
-    """
-    @TODO:
-    Create error handlers for all expected errors
-    including 404 and 422.
-    """    
+    # """
+    # @TODO:
+    # Create error handlers for all expected errors
+    # including 404 and 422.
+    # """    
     @app.errorhandler(404)
     def notFound(error):
         return jsonify({
@@ -285,7 +284,13 @@ def create_app(test_config=None):
             'error': 422,
             'message': 'Unprocessable'
         })
-
+    @app.errorhandler(400)
+    def unprocessable(error):
+        return jsonify({
+            'success': False,
+            'error': 400,
+            'message': 'Bad request'
+        })
     if __name__ == '__main__':
         app.run('0.0.0.0', debug=True)
 
